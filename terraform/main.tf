@@ -1,6 +1,6 @@
 #create a vpc
 resource "aws_vpc" "rustdesk_vpc" {
-  cidr_block = "10.0.0.0/16"
+  cidr_block       = "10.0.0.0/16"
   instance_tenancy = "default"
 
   tags = {
@@ -10,7 +10,7 @@ resource "aws_vpc" "rustdesk_vpc" {
 
 #create a subnet
 resource "aws_subnet" "rustdesk-subnet" {
-  vpc_id = aws_vpc.rustdesk_vpc.id
+  vpc_id     = aws_vpc.rustdesk_vpc.id
   cidr_block = "10.0.0.0/24"
 
   tags = {
@@ -39,7 +39,7 @@ resource "aws_route_table" "rustdesk_route_table" {
 
 #associate subnet with vpc
 resource "aws_route_table_association" "rustdesk_route_table_association" {
-  subnet_id = aws_subnet.rustdesk-subnet.id
+  subnet_id      = aws_subnet.rustdesk-subnet.id
   route_table_id = aws_route_table.rustdesk_route_table.id
 }
 
@@ -48,37 +48,37 @@ resource "aws_security_group" "rustdesk_security_group" {
   vpc_id = aws_vpc.rustdesk_vpc.id
 
   #inboudn rules
-  
+
   ingress {
-    from_port = 21115
-    to_port = 21119
-    protocol = "tcp"
+    from_port   = 21115
+    to_port     = 21119
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-    from_port = 21116
-    to_port = 21116
-    protocol = "udp"
+    from_port   = 21116
+    to_port     = 21116
+    protocol    = "udp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
     Name = var.security_group_name
   }
-  
+
 }
 
 #create a network acl
-resource "aws_network_acl" "vpn_network_acl" {
-  vpc_id = aws_vpc.vpn_vpc.id
+resource "aws_network_acl" "rustdesk_network_acl" {
+  vpc_id = aws_vpc.rustdesk_vpc.id
 
   #inbound rules
   ingress {
@@ -102,7 +102,7 @@ resource "aws_network_acl" "vpn_network_acl" {
   }
 
   tags = {
-    Name = "vpn-network-acl"
+    Name = "rustdesk-network-acl"
   }
 }
 
@@ -134,13 +134,13 @@ output "elastic_ip" {
 
 #create ec2 instance
 resource "aws_instance" "rustdesk_instance" {
-  ami = "ami-07d2649d67dbe8900" #ubuntu
-  instance_type = var.instance_type
-  subnet_id = aws_subnet.rustdesk-subnet.id
+  ami                    = "ami-07d2649d67dbe8900" #ubuntu
+  instance_type          = var.instance_type
+  subnet_id              = aws_subnet.rustdesk-subnet.id
   vpc_security_group_ids = [aws_security_group.rustdesk_security_group.id]
 
   root_block_device {
-    volume_size = 8
+    volume_size           = 8
     delete_on_termination = true
   }
 

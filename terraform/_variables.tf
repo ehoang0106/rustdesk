@@ -3,26 +3,26 @@ variable "region" {
 }
 
 variable "instance_type" {
-  default = "t2.micro"
+  default     = "t2.micro"
   description = "instance type"
 }
 
 variable "instance_name" {
-  default = "rustdesk"
+  default     = "rustdesk"
   description = "instance name"
 }
 
 variable "subnet_name" {
   default = "rustdesk-subnet"
-  type = string
+  type    = string
 }
 
 variable "security_group_name" {
   default = "rustdesk-security-group"
-  type = string
+  type    = string
 }
 
 variable "vpc_name" {
   default = "rustdesk-vpc"
-  type = string
+  type    = string
 }
