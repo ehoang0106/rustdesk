@@ -1,0 +1,98 @@
+---
+- hosts: localhost
+  become: true
+  tasks:
+    - name: Install apt
+      apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+    
+    - name: Install required system packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+        state: latest
+        update_cache: true
+
+    - name: Add Docker GPG apt key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+    
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose
+        state: latest
+        update_cache: true
+    
+    - name: Verify Docker installation
+      command: docker --version
+      register: docker_version
+      changed_when: false
+
+    - name: Verify Docker Compose installation
+      command: docker-compose --version
+      register: docker_compose_version
+      changed_when: false
+
+    - name: Verify ufw installation
+      command: ufw --version
+      register: ufw_version
+      changed_when: false
+
+    - name: Start and enable Docker
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Wait for Docker to be ready
+      command: sleep 10
+      changed_when: false
+
+    - name: Check docker ps
+      command: docker ps
+      register: docker_ps
+      changed_when: false
+    
+    - name: Run container using docker compose
+      command: docker-compose -f ./docker-compose.yml up -d
+      register: docker_compose_up
+      changed_when: false
+
+    #use ufw to allow traffic on port 21115-21119 tcp and 21116 udp
+    - name: Open ports 21115-21119 tcp
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+        state: enabled
+      loop:
+        - 21115
+        - 21116
+        - 21117
+        - 21118
+        - 21119
+
+    - name: Open port 21116 udp
+      ufw:
+        rule: allow
+        port: 21116
+        proto: udp
+        state: enabled
