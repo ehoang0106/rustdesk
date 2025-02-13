@@ -86,7 +86,9 @@ jobs:
           name: env-file
 
       - name: Load EC2 IP from .env
-        run: source .env
+        run: |
+          cat .env
+          source .env
 
       - name: SSH to EC2    
         env:
