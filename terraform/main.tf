@@ -132,6 +132,10 @@ output "elastic_ip" {
   value = aws_eip.rustdesk_eip.public_ip
 }
 
+output "instance_ip" {
+  value = aws_instance.rustdesk_instance.public_ip
+}
+
 #create ec2 instance
 resource "aws_instance" "rustdesk_instance" {
   ami                    = "ami-07d2649d67dbe8900" #ubuntu
