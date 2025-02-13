@@ -58,7 +58,7 @@ jobs:
         id: ec2_ip
         run: |
           IP=$(terraform output -raw instance_ip 2>/dev/null | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
-          echo "ec2_ip=${IP}" | tee -a $GITHUB_ENV
+          echo "ec2_ip=${IP}" >> "$GITHUB_ENV"
         shell: bash
 
   
