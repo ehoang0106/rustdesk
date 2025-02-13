@@ -142,7 +142,7 @@ resource "aws_instance" "rustdesk_instance" {
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.rustdesk-subnet.id
   vpc_security_group_ids = [aws_security_group.rustdesk_security_group.id]
-
+  key_name = "rustdesk-kp"
   root_block_device {
     volume_size           = 8
     delete_on_termination = true
