@@ -1,0 +1,102 @@
+name: RustDesk Server Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'development'
+        type: choice
+        options:
+          - development
+          - production
+
+env:
+  AWS_REGION: us-west-1
+  TF_WORKSPACE: ${{ github.event.inputs.environment }}
+
+jobs:
+  terraform-deploy:
+    runs-on: ubuntu-latest
+    outputs:
+      instance_ip: ${{ steps.get-ip.outputs.instance_ip }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform Init
+        working-directory: ./terraform
+        run: terraform init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Terraform Plan
+        working-directory: ./terraform
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        working-directory: ./terraform
+        run: terraform apply -auto-approve tfplan
+
+      - name: Get Instance IP
+        id: get-ip
+        working-directory: ./terraform
+        run: |
+          echo "instance_ip=$(terraform output -raw elastic_ip)" >> $GITHUB_OUTPUT
+
+      - name: Wait for instance to be ready
+        run: sleep 90  # Wait for instance to be fully ready and SSH available
+
+  ansible-deploy:
+    needs: terraform-deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ needs.terraform-deploy.outputs.instance_ip }} >> ~/.ssh/known_hosts
+
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
+
+      - name: Modify Ansible playbook hosts
+        run: |
+          sed -i 's/localhost/all/g' ./ansible/playbook.yml
+
+      - name: Create Ansible inventory
+        run: |
+          echo "[all]" > inventory.ini
+          echo "rustdesk ansible_host=${{ needs.terraform-deploy.outputs.instance_ip }} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa" >> inventory.ini
+
+      - name: Copy Docker Compose file
+        run: |
+          mkdir -p ansible/files
+          cp ansible/docker-compose.yml ansible/files/
+
+      - name: Run Ansible playbook
+        working-directory: ./ansible
+        run: |
+          ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ../inventory.ini playbook.yml -v
