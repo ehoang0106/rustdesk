@@ -66,8 +66,7 @@ jobs:
           echo "Fetching EC2 Instance IP..."
           INSTANCE_IP=$(terraform output -raw instance_ip 2>/dev/null | tr -d '\r' | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}')
           echo "INSTANCE_IP=$INSTANCE_IP" > instance_ip.txt
-      - name: Load EC2 IP to github env
-        run: cat instance_ip.txt >> $GITHUB_ENV
+      
 
 
       - name: Setup Ansible
@@ -76,7 +75,7 @@ jobs:
       - name: Create Ansible Inventory
         run: |
           echo "[localhost]" > ./ansible/inventory
-          echo "${{ env.INSTANCE_IP }} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/my-key.pem" >> ansible/inventory.ini
+          echo "54.215.54.124 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/my-key.pem" >> ansible/inventory.ini
       
       - name: Run Ansible playbook
         run: ansible-playbook -i ./ansible/inventory ./ansible/playbook.yml
