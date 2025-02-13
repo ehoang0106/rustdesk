@@ -62,5 +62,27 @@ jobs:
           echo EOF
           >> "$GITHUB_ENV"
         shell: bash
+  
 
+  ansible-deploy:
+    name: Ansible Deployment
+    runs-on: ubuntu-latest
+    needs: [terraform]
+    if: github.event.inputs.tf_action == 'apply'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: sudo apt-get update && sudo apt-get install -y ansible
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan ${{ needs.terraform.outputs.ec2_ip }} >> ~/.ssh/known_hosts
+
+      - name: Run Ansible Playbook
+        run: ansible-playbook ansible/playbook.yml -i "${{ needs.terraform.outputs.ec2_ip}}," -u $ANSIBLE_USER --private-key ~/.ssh/id_rsa
   
