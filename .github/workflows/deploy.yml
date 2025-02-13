@@ -58,7 +58,7 @@ jobs:
         id: ec2_ip
         run: |
           IP=$(terraform output -raw instance_ip 2>/dev/null)
-          echo "ec2_ip=${IP}"
+          echo "::set-output name=ec2_ip::${IP}"
         shell: bash
 
   
