@@ -65,7 +65,7 @@ jobs:
 
       - name: Upload .env file
         if: github.event.inputs.tf_action == 'apply'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: env-file
           path: .env
