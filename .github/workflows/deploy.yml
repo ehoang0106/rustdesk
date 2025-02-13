@@ -14,6 +14,7 @@ on:
 env:
   AWS_REGION: "us-west-1"
   ANSIBLE_USER: "ubuntu"
+  
 
 jobs:
   terraform:
@@ -73,16 +74,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Ansible
-        run: sudo apt-get update && sudo apt-get install -y ansible
-
-      - name: Configure SSH
+      - name: SSH to EC2    
+        env:
+          PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          HOSTNAME: ${{ needs.terraform.outputs.ec2_ip }}
+          USER_NAME: ubuntu
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan ${{ needs.terraform.outputs.ec2_ip }} >> ~/.ssh/known_hosts
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
 
-      - name: Run Ansible Playbook
-        run: ansible-playbook ansible/playbook.yml -i "${{ needs.terraform.outputs.ec2_ip}}," -u $ANSIBLE_USER --private-key ~/.ssh/id_rsa
-  
+              # Now we have got the access of EC2 and we will start the deploy .
+              cd /home/ubuntu &&
+              sudo apt-get update && sudo apt-get install -y ansible
+              #run ansible playbook by using the file in the repo in the ansible folder
+              ansible-playbook ansible/playbook.yml -i "${{ needs.terraform.outputs.ec2_ip}}," -u ubuntu --private-key ~/.ssh/id_rsa
+              '
+
+      
