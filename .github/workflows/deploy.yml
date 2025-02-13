@@ -1,27 +1,24 @@
-name: RustDesk Server Deployment
-
+name: Deploy RustDesk Infrastructure
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Environment to deploy to'
+      tf_action:
+        description: 'Terraform action (apply/destroy)'
         required: true
-        default: 'development'
+        default: 'apply'
         type: choice
         options:
-          - development
-          - production
+          - apply
+          - destroy
 
 env:
-  AWS_REGION: us-west-1
-  TF_WORKSPACE: ${{ github.event.inputs.environment }}
+  AWS_REGION: "us-west-1"
+  ANSIBLE_USER: "ubuntu"
 
 jobs:
-  terraform-deploy:
+  terraform:
+    name: Terraform Apply
     runs-on: ubuntu-latest
-    outputs:
-      instance_ip: ${{ steps.get-ip.outputs.instance_ip }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,72 +28,49 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-1
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.7.0"
+        uses: hashicorp/setup-terraform@v2
 
       - name: Terraform Init
-        working-directory: ./terraform
-        run: terraform init
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: terraform init -chdir=terraform
 
-      - name: Terraform Plan
-        working-directory: ./terraform
-        run: terraform plan -out=tfplan
+      - name: Terraform Validate
+        run: terraform validate -chdir=terraform
 
-      - name: Terraform Apply
-        working-directory: ./terraform
-        run: terraform apply -auto-approve tfplan
-
-      - name: Get Instance IP
-        id: get-ip
-        working-directory: ./terraform
+      - name: Terraform Plan/Apply/Destroy
         run: |
-          echo "instance_ip=$(terraform output -raw elastic_ip)" >> $GITHUB_OUTPUT
+          if [ "${{ github.event.inputs.tf_action }}" == "apply" ]; then
+            terraform plan -chdir=terraform
+            terraform apply -auto-approve -chdir=terraform
+          else
+            terraform destroy -auto-approve -chdir=terraform
+          fi
 
-      - name: Wait for instance to be ready
-        run: sleep 90  # Wait for instance to be fully ready and SSH available
+      - name: Get EC2 IP
+        if: github.event.inputs.tf_action == 'apply'
+        id: ec2_ip
+        run: echo "ec2_ip=$(terraform output -chdir=terraform -raw instance_ip)" >> $GITHUB_OUTPUT
 
   ansible-deploy:
-    needs: terraform-deploy
+    name: Ansible Deployment
     runs-on: ubuntu-latest
-
+    needs: [terraform]
+    if: github.event.inputs.tf_action == 'apply'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup SSH key
+      - name: Install Ansible
+        run: sudo apt-get update && sudo apt-get install -y ansible
+
+      - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ needs.terraform-deploy.outputs.instance_ip }} >> ~/.ssh/known_hosts
+          ssh-keyscan ${{ needs.terraform.outputs.ec2_ip }} >> ~/.ssh/known_hosts
 
-      - name: Install Ansible
-        run: |
-          sudo apt update
-          sudo apt install -y ansible
-
-      - name: Modify Ansible playbook hosts
-        run: |
-          sed -i 's/localhost/all/g' ./ansible/playbook.yml
-
-      - name: Create Ansible inventory
-        run: |
-          echo "[all]" > inventory.ini
-          echo "rustdesk ansible_host=${{ needs.terraform-deploy.outputs.instance_ip }} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa" >> inventory.ini
-
-      - name: Copy Docker Compose file
-        run: |
-          mkdir -p ansible/files
-          cp ansible/docker-compose.yml ansible/files/
-
-      - name: Run Ansible playbook
-        working-directory: ./ansible
-        run: |
-          ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ../inventory.ini playbook.yml -v
+      - name: Run Ansible Playbook
+        run: ansible-playbook ansible/playbook.yml -i "${{ needs.terraform.outputs.ec2_ip}}," -u $ANSIBLE_USER --private-key ~/.ssh/id_rsa
