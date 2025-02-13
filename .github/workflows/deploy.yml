@@ -57,7 +57,7 @@ jobs:
         if: github.event.inputs.tf_action == 'apply'
         id: ec2_ip
         run: |
-          IP=$(terraform output -raw instance_ip 2>/dev/null | grep -oP '(\d{1,3}\.){3}\d{1,3}')
+          IP=$(terraform output -raw instance_ip 2>/dev/null | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
           echo "ec2_ip=${IP}" >> $GITHUB_ENV
         shell: bash
 
