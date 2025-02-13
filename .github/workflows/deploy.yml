@@ -60,7 +60,7 @@ jobs:
         id: ec2_ip
         run: |
           IP=$(terraform output -raw instance_ip 2>/dev/null | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
-          echo "ec2_ip=${IP}" > .env
+          echo "ec2_ip=${IP}" > ../.env
         shell: bash
 
       - name: Upload .env file
@@ -68,7 +68,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: env-file
-          path: .env
+          path: ../.env
       
 
   ansible-deploy:
