@@ -63,7 +63,6 @@ jobs:
           echo "ec2_ip=${IP}" >> $GITHUB_ENV
         shell: bash
       
-  
 
   ansible-deploy:
     name: Ansible Deployment
@@ -77,19 +76,13 @@ jobs:
       - name: SSH to EC2    
         env:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          #get the hostname from the ec2_ip after add it to $GITHUB_ENV above
-          HOSTNAME: ${{ env.ec2_ip }}
-
+          HOSTNAME: ${{ steps.ec2_ip.outputs.ec2_ip }}
           USER_NAME: ubuntu
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-
-              # Now we have got the access of EC2 and we will start the deploy .
               cd /home/ubuntu &&
-              sudo apt-get update && sudo apt-get install -y ansible
-              #run ansible playbook by using the file in the repo in the ansible folder
-              ansible-playbook ansible/playbook.yml -i "${{ env.ec2_ip }}," -u ubuntu --private-key ~/.ssh/id_rsa
+              sudo apt-get update && sudo apt-get install -y ansible &&
+              ansible-playbook ansible/playbook.yml -i "${{ steps.ec2_ip.outputs.ec2_ip }}," -u ubuntu --private-key ~/.ssh/id_rsa
               '
-
-      
+        shell: bash
