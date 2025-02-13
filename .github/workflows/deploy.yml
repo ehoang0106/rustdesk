@@ -19,6 +19,11 @@ jobs:
   terraform:
     name: Terraform Apply
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./terraform
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,28 +39,33 @@ jobs:
         uses: hashicorp/setup-terraform@v2
 
       - name: Terraform Init
-        run: terraform init -chdir=terraform
+        run: terraform init 
 
       - name: Terraform Validate
-        run: terraform validate -chdir=terraform
+        run: terraform validate 
 
       - name: Terraform Plan/Apply/Destroy
         run: |
           if [ "${{ github.event.inputs.tf_action }}" == "apply" ]; then
-            terraform plan -chdir=terraform
-            terraform apply -auto-approve -chdir=terraform
+            terraform plan 
+            terraform apply -auto-approve 
           else
-            terraform destroy -auto-approve -chdir=terraform
+            terraform destroy -auto-approve 
           fi
 
       - name: Get EC2 IP
         if: github.event.inputs.tf_action == 'apply'
         id: ec2_ip
-        run: echo "ec2_ip=$(terraform output -chdir=terraform -raw instance_ip)" >> $GITHUB_OUTPUT
+        run: echo "ec2_ip=$(terraform output  -raw instance_ip)" >> $GITHUB_OUTPUT
 
   ansible-deploy:
     name: Ansible Deployment
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./ansible
     needs: [terraform]
     if: github.event.inputs.tf_action == 'apply'
     steps:
