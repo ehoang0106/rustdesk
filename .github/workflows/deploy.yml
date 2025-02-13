@@ -56,7 +56,9 @@ jobs:
       - name: Get EC2 IP
         if: github.event.inputs.tf_action == 'apply'
         id: ec2_ip
-        run: echo "ec2_ip=$(terraform output  -raw instance_ip)" >> $GITHUB_OUTPUT
+        run: |
+          IP=$(terraform output -raw instance_ip)
+          echo "ec2_ip=$IP" >> $GITHUB_ENV
 
   ansible-deploy:
     name: Ansible Deployment
