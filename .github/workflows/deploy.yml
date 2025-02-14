@@ -81,7 +81,7 @@ jobs:
       - name: SSH to EC2    
         env:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          HOSTNAME:
+          HOSTNAME: ${{ steps.ec2_ip.outputs.ec2_ip }}
           USER_NAME: ubuntu
         run: |
           echo "this is the ip: ${{ env.ec2_ip }}"
@@ -94,4 +94,6 @@ jobs:
                 sudo apt-get update && sudo apt-get install -y ansible &&
                 ansible-playbook playbook.yml
               '
+
+        
         shell: bash
