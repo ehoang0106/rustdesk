@@ -50,7 +50,7 @@ jobs:
           if [ "${{ github.event.inputs.tf_action }}" == "apply" ]; then
             terraform plan 
             terraform apply -auto-approve 
-            terraform output -raw instance_ip > $GITHUB_OUTPUT
+            terraform output -raw instance_ip > ../.github/workflows/ansible/outputs/ec2_ip.txt
           else
             terraform destroy -auto-approve 
           fi
