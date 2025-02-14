@@ -63,7 +63,7 @@ jobs:
           IP=$(terraform output -raw instance_ip 2>/dev/null | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
           echo "ec2_ip=${IP}" >> $GITHUB_ENV
           echo "This is the IP: $IP"
-          
+          echo "${{ steps.ec2_ip.outputs.ec2_ip }}" | gh secret set EC2_IP --repo ${{ github.repository }}
         shell: bash
       
           
@@ -82,7 +82,7 @@ jobs:
       - name: SSH to EC2    
         env:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          HOSTNAME: ${{ steps.ec2_ip.outputs.ec2_ip }}
+          HOSTNAME: ${{ secrets.EC2_IP }}
           USER_NAME: ubuntu
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
