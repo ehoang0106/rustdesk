@@ -60,15 +60,10 @@ jobs:
         id: ec2_ip
         run: |
           IP=$(terraform output -raw instance_ip 2>/dev/null | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
-          echo "ec2_ip=${IP}" > $GITHUB_WORKSPACE/.env
-        shell: bash
+          echo "ec2_ip=${IP}" << EOF
+          echo EOF
+          >> $GITHUB_OUTPUT
 
-      - name: Upload .env file
-        if: github.event.inputs.tf_action == 'apply'
-        uses: actions/upload-artifact@v4
-        with:
-          name: env-file
-          path: $GITHUB_WORKSPACE/.env
       
 
   ansible-deploy:
@@ -80,20 +75,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download .env file
-        uses: actions/download-artifact@v4
-        with:
-          name: env-file
-
-      - name: Load EC2 IP from .env
-        run: |
-          cat .env
-          source .env
-
       - name: SSH to EC2    
         env:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          HOSTNAME: ${{ env.ec2_ip }}
+          HOSTNAME: ${{ needs.get-ip.outputs.ec2_ip }}
           USER_NAME: ubuntu
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
