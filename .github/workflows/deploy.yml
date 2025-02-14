@@ -70,6 +70,10 @@ jobs:
   ansible-deploy:
     name: Ansible Deployment
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./ansible
     needs: [terraform]
     if: github.event.inputs.tf_action == 'apply'
     steps:
@@ -84,8 +88,8 @@ jobs:
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@184.72.39.161 '
-              cd /home/ubuntu &&
-              sudo apt-get update && sudo apt-get install -y ansible &&
-              ansible-playbook ansible/playbook.yml -i "${{ env.ec2_ip }}," -u ubuntu --private-key ~/.ssh/id_rsa
+                cd /home/ubuntu &&
+                sudo apt-get update && sudo apt-get install -y ansible &&
+                ansible-playbook /github/workspace/ansible/playbook.yml -i "${{ needs.terraform.outputs.ec2_ip }}," -u ubuntu --private-key private_key
               '
         shell: bash
