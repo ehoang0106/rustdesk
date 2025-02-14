@@ -90,6 +90,6 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@184.72.39.161 '
                 cd /home/ubuntu &&
                 sudo apt-get update && sudo apt-get install -y ansible &&
-                ansible-playbook /github/workspace/ansible/playbook.yml -i "${{ needs.terraform.outputs.ec2_ip }}," -u ubuntu --private-key private_key
+                ansible-playbook /github/workspace/ansible/playbook.yml
               '
         shell: bash
