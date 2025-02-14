@@ -85,7 +85,7 @@ jobs:
       - name: SSH to EC2    
         env:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          HOSTNAME: ${{ steps.ec2_ip.outputs.ec2_ip }}
+          HOSTNAME: ${{ needs.terraform.outputs.ec2_ip }}
           USER_NAME: ubuntu
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
