@@ -85,8 +85,8 @@ jobs:
       - name: SSH to EC2    
         env:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          # get the ip from the #GITHUB_ENV above
-          HOSTNAME: ${{ env.ec2_ip }}
+          # get the ip from the $IP of $GITHUB_ENV above
+          HOSTNAME: $IP
           USER_NAME: ubuntu
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
