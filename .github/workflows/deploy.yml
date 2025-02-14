@@ -64,7 +64,7 @@ jobs:
           echo "ec2_ip=$IP" >> $GITHUB_ENV
           echo "this is the ip1: $IP "
           echo "${{ secrets.EC2_SSH_PRIVATE_KEY }} > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@$IP '
+          ssh -o StrictHostKeyChecking=no -i private_key ubuntu@$IP '
                 cd /home/ubuntu &&
                 git clone https://github.com/ehoang0106/rustdesk.git &&
                 cd rustdesk &&
