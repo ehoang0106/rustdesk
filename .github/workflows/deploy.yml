@@ -57,13 +57,15 @@ jobs:
             terraform destroy -auto-approve 
           fi
       - name: Get EC2 IP
+        env:
+            PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
         if: github.event.inputs.tf_action == 'apply'
         id: ec2_ip
         run: |
           IP=$(terraform output -raw instance_ip)
           echo "ec2_ip=$IP" >> $GITHUB_ENV
           echo "this is the ip1: $IP "
-          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }} > private_key && chmod 600 private_key
+          echo "$PRIVATE_KEY > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ubuntu@$IP '
                 cd /home/ubuntu &&
                 git clone https://github.com/ehoang0106/rustdesk.git &&
