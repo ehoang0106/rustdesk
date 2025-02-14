@@ -63,6 +63,7 @@ jobs:
           IP=$(terraform output -raw instance_ip 2>/dev/null | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
           echo "ec2_ip=${IP}" >> $GITHUB_ENV
           echo "This is the IP: $IP"
+          
         shell: bash
       
           
@@ -72,10 +73,6 @@ jobs:
   ansible-deploy:
     name: Ansible Deployment
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-        working-directory: ./ansible
     needs: [terraform]
     if: github.event.inputs.tf_action == 'apply'
     steps:
@@ -85,7 +82,7 @@ jobs:
       - name: SSH to EC2    
         env:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          HOSTNAME: ${{ needs.terraform.outputs.ec2_ip }}
+          HOSTNAME: ${{ steps.ec2_ip.outputs.ec2_ip }}
           USER_NAME: ubuntu
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
