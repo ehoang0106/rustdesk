@@ -56,7 +56,13 @@ jobs:
           else
             terraform destroy -auto-approve 
           fi
-
+      - name: Get EC2 IP
+        if: github.event.inputs.tf_action == 'apply'
+        id: ec2_ip
+        run: |
+          IP=$(terraform output -raw instance_ip 2>/dev/null | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
+          echo "ec2_ip=${IP}" >> $GITHUB_ENV
+        shell: bash
       
           
 
@@ -79,7 +85,7 @@ jobs:
         env:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           # get the ip from the #GITHUB_ENV above
-          HOSTNAME: ${{ needs.terraform.outputs.instance_ip }}
+          HOSTNAME: ${{ env.ec2_ip }}
           USER_NAME: ubuntu
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
