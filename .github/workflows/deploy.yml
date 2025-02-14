@@ -50,20 +50,13 @@ jobs:
           if [ "${{ github.event.inputs.tf_action }}" == "apply" ]; then
             terraform plan 
             terraform apply -auto-approve 
+            terraform output -raw instance_ip > $GITHUB_OUTPUT
           else
             terraform destroy -auto-approve 
           fi
 
       
-      - name: Get EC2 IP
-        if: github.event.inputs.tf_action == 'apply'
-        id: ec2_ip
-        run: |
-          IP=$(terraform output -raw instance_ip 2>/dev/null | grep -Eo '([0-9]{1,3}\.){3}[0-9]{1,3}')
-          echo "ec2_ip=${IP}" << EOF
-          echo EOF
-          >> $GITHUB_OUTPUT
-          echo "ip is: ${{ needs.get-ip.outputs.ec2_ip }}"
+          
 
       
 
