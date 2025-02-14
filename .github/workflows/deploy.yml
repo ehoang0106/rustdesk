@@ -50,7 +50,7 @@ jobs:
           if [ "${{ github.event.inputs.tf_action }}" == "apply" ]; then
             terraform plan 
             terraform apply -auto-approve 
-            terraform output -raw instance_ip > ../.github/workflows/ansible/outputs/ec2_ip.txt
+            terraform output -raw instance_ip
           else
             terraform destroy -auto-approve 
           fi
@@ -76,7 +76,8 @@ jobs:
       - name: SSH to EC2    
         env:
           PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
-          HOSTNAME: ${{ needs.get-ip.outputs.ec2_ip }}
+          # get the ip from the #GITHUB_ENV above
+          HOSTNAME: ${{ needs.terraform.outputs.instance_ip }}
           USER_NAME: ubuntu
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
