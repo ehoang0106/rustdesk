@@ -1,13 +1,7 @@
 ---
-- hosts: localhost
+- hosts: rustdesk
   become: true
   tasks:
-    - name: Install apt
-      apt:
-        name: aptitude
-        state: latest
-        update_cache: true
-    
     - name: Install required system packages
       apt:
         pkg:
@@ -25,7 +19,7 @@
       apt_key:
         url: https://download.docker.com/linux/ubuntu/gpg
         state: present
-    
+
     - name: Add Docker repository
       apt_repository:
         repo: deb https://download.docker.com/linux/ubuntu focal stable
@@ -40,7 +34,7 @@
           - docker-compose
         state: latest
         update_cache: true
-    
+
     - name: Verify Docker installation
       command: docker --version
       register: docker_version
@@ -70,11 +64,20 @@
       command: docker ps
       register: docker_ps
       changed_when: false
-    
-    - name: Run container using docker compose
+
+    - name: Copy docker container to remote host
+      copy:
+        src: ~/ansible/docker-compose.yml
+        dest: /home/ubuntu/docker-compose.yml
+        owner: ubuntu
+        mode: '0644'
+
+    - name: Start docker container
       command: sudo docker-compose up -d
+      args:
+        chdir: /home/ubuntu
       register: docker_compose_up
-      changed_when: false
+      changed_when: false    
 
     #use ufw to allow traffic on port 21115-21119 tcp and 21116 udp
     - name: Open ports 21115-21119 tcp
@@ -103,3 +106,4 @@
         port: 22
         proto: tcp
         state: enabled
+    
