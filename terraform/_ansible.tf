@@ -1,4 +1,4 @@
-#ansible serverr
+#ansible server
 
 resource "aws_subnet" "ansible_subnet" {
   vpc_id     = aws_vpc_ipv4_cidr_block_association.second_cidr_block.vpc_id

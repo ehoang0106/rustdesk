@@ -1,3 +1,5 @@
+#rustdesk server
+
 #create a subnet
 resource "aws_subnet" "rustdesk_subnet" {
   vpc_id     = aws_vpc.remote_vpc.id
