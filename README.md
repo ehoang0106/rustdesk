@@ -20,6 +20,10 @@ ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
 download or create a keypair in `~/.ssh/your-keypair.pem`
 
+change the mode for keypair
+
+`chmod 400 ~/.ssh/your-keypair.pem`
+
 then swith ssh-agent to bash and add the keypair to ssh-agent
 
 ```
@@ -33,3 +37,8 @@ make sure cd into the `~/ansible`
 ```
 ansible all -i inventory -m ping
 ```
+
+run ansible play book
+
+```ansible-playbook -i inventory playbook.yml ```
+
