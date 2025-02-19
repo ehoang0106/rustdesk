@@ -1,8 +1,10 @@
+#ansible serverr
+
 resource "aws_subnet" "ansible_subnet" {
-  vpc_id     = aws_vpc.remote_vpc.id
-  cidr_block = "10.1.0.0/24"
+  vpc_id     = aws_vpc_ipv4_cidr_block_association.second_cidr_block.vpc_id
+  cidr_block = "10.1.0.0/20"
   tags = {
-    Name = "ansible-subnet"
+    Name = "ansible_subnet"
   }
 }
 
@@ -39,7 +41,7 @@ resource "aws_route_table_association" "ansible_route_table_association" {
 }
 
 resource "aws_instance" "ansible_server" {
-  ami             = "ami-07d2649d67dbe8900" #ubuntu
+  ami             = var.ami_id #ubuntu
   instance_type   = var.instance_type
   subnet_id       = aws_subnet.ansible_subnet.id
   security_groups = [aws_security_group.ansible_sg.id]
@@ -50,11 +52,12 @@ resource "aws_instance" "ansible_server" {
   }
 
   tags = {
-    Name = "ansible-server"
+    Name = "ansible_server"
   }
 
   associate_public_ip_address = true
 }
+
 
 output "ansible_ec2_name" {
   value = aws_instance.ansible_server.tags.Name
