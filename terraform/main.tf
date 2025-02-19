@@ -1,5 +1,5 @@
 #create a vpc
-resource "aws_vpc" "rustdesk_vpc" {
+resource "aws_vpc" "remote_vpc" {
   cidr_block       = "10.0.0.0/16"
   instance_tenancy = "default"
 
@@ -8,9 +8,15 @@ resource "aws_vpc" "rustdesk_vpc" {
   }
 }
 
+#second cidr block for second subnet
+resource "aws_vpc_ipv4_cidr_block_association" "second_cidr_block" {
+  vpc_id        = aws_vpc.remote_vpc.id
+  cidr_block    = "10.1.0.0/16"
+}
+
 #create a subnet
 resource "aws_subnet" "rustdesk-subnet" {
-  vpc_id     = aws_vpc.rustdesk_vpc.id
+  vpc_id     = aws_vpc.remote_vpc.id
   cidr_block = "10.0.0.0/24"
 
   tags = {
@@ -20,7 +26,7 @@ resource "aws_subnet" "rustdesk-subnet" {
 
 #create a internet gateway
 resource "aws_internet_gateway" "rustdesk_igw" {
-  vpc_id = aws_vpc.rustdesk_vpc.id
+  vpc_id = aws_vpc.remote_vpc.id
 
   tags = {
     Name = "rustdesk-internet-gateway"
@@ -29,7 +35,7 @@ resource "aws_internet_gateway" "rustdesk_igw" {
 
 #create a route table
 resource "aws_route_table" "rustdesk_route_table" {
-  vpc_id = aws_vpc.rustdesk_vpc.id
+  vpc_id = aws_vpc.remote_vpc.id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -45,7 +51,7 @@ resource "aws_route_table_association" "rustdesk_route_table_association" {
 
 #create a security group
 resource "aws_security_group" "rustdesk_security_group" {
-  vpc_id = aws_vpc.rustdesk_vpc.id
+  vpc_id = aws_vpc.remote_vpc.id
 
   #inboudn rules
 
@@ -85,7 +91,7 @@ resource "aws_security_group" "rustdesk_security_group" {
 
 #create a network acl
 resource "aws_network_acl" "rustdesk_network_acl" {
-  vpc_id = aws_vpc.rustdesk_vpc.id
+  vpc_id = aws_vpc.remote_vpc.id
 
   #inbound rules
   ingress {
@@ -132,7 +138,7 @@ output "security_group" {
 }
 
 output "vpc_name" {
-  value = aws_vpc.rustdesk_vpc.tags.Name
+  value = aws_vpc.remote_vpc.tags.Name
 }
 
 output "elastic_ip" {
