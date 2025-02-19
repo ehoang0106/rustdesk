@@ -32,7 +32,7 @@ resource "aws_security_group" "ansible_sg" {
     Name = "ansible_sg"
   }
 }
-
+#associate subnet with route table
 resource "aws_route_table_association" "ansible_route_table_association" {
   subnet_id      = aws_subnet.ansible_subnet.id
   route_table_id = aws_route_table.remote_route_table.id
