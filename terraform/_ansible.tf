@@ -50,7 +50,8 @@ resource "aws_instance" "ansible_server" {
     volume_size           = 8
     delete_on_termination = true
   }
-
+  
+  #user_data = base64encode(data.template_file.user_data.rendered)
   tags = {
     Name = "ansible_server"
   }
