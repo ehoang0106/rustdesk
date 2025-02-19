@@ -25,7 +25,7 @@ resource "aws_subnet" "rustdesk-subnet" {
 }
 
 #create a internet gateway
-resource "aws_internet_gateway" "rustdesk_igw" {
+resource "aws_internet_gateway" "remote_igw" {
   vpc_id = aws_vpc.remote_vpc.id
 
   tags = {
@@ -39,7 +39,7 @@ resource "aws_route_table" "remote_route_table" {
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.rustdesk_igw.id
+    gateway_id = aws_internet_gateway.remote_igw.id
   }
 }
 
