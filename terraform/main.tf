@@ -125,15 +125,15 @@ resource "aws_eip" "rustdesk_eip" {
 }
 
 #print out the ec2 name, subnet name, security group, vpc name, and elastic ip
-output "ec2_name" {
+output "rustdesk_ec2_name" {
   value = aws_instance.rustdesk_instance.tags.Name
 }
 
-output "subnet_name" {
+output "rustdesk_subnet_name" {
   value = aws_subnet.rustdesk-subnet.tags.Name
 }
 
-output "security_group" {
+output "rustdes_security_group" {
   value = aws_security_group.rustdesk_security_group.tags.Name
 }
 
@@ -141,11 +141,8 @@ output "vpc_name" {
   value = aws_vpc.remote_vpc.tags.Name
 }
 
-output "elastic_ip" {
-  value = aws_eip.rustdesk_eip.public_ip
-}
 
-output "instance_ip" {
+output "rustdesk_instance_ip" {
   value = aws_instance.rustdesk_instance.public_ip
 }
 
