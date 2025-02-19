@@ -34,7 +34,7 @@ resource "aws_internet_gateway" "rustdesk_igw" {
 }
 
 #create a route table
-resource "aws_route_table" "rustdesk_route_table" {
+resource "aws_route_table" "remote_route_table" {
   vpc_id = aws_vpc.remote_vpc.id
 
   route {
@@ -44,9 +44,9 @@ resource "aws_route_table" "rustdesk_route_table" {
 }
 
 #associate subnet with vpc
-resource "aws_route_table_association" "rustdesk_route_table_association" {
+resource "aws_route_table_association" "remote_route_table_association" {
   subnet_id      = aws_subnet.rustdesk-subnet.id
-  route_table_id = aws_route_table.rustdesk_route_table.id
+  route_table_id = aws_route_table.remote_route_table.id
 }
 
 #create a security group
