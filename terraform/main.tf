@@ -43,8 +43,8 @@ resource "aws_route_table" "remote_route_table" {
   }
 }
 
-#associate subnet with vpc
-resource "aws_route_table_association" "remote_route_table_association" {
+#associate subnet with route table
+resource "aws_route_table_association" "rustdesk_route_table_association" {
   subnet_id      = aws_subnet.rustdesk-subnet.id
   route_table_id = aws_route_table.remote_route_table.id
 }
