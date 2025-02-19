@@ -1,5 +1,5 @@
 resource "aws_subnet" "ansible_subnet" {
-  vpc_id = aws_vpc.remote_vpc.id
+  vpc_id     = aws_vpc.remote_vpc.id
   cidr_block = "10.1.0.0/24"
   tags = {
     Name = "ansible-subnet"
@@ -15,16 +15,16 @@ resource "aws_security_group" "ansible_sg" {
   vpc_id = aws_vpc.remote_vpc.id
 
   ingress {
-    from_port = 22
-    to_port = 22
-    protocol = "tcp"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -34,13 +34,13 @@ resource "aws_security_group" "ansible_sg" {
 }
 
 resource "aws_instance" "ansible_server" {
-  ami                    = "ami-07d2649d67dbe8900" #ubuntu
-  instance_type = var.instance_type
-  subnet_id = aws_subnet.ansible_subnet.id
+  ami             = "ami-07d2649d67dbe8900" #ubuntu
+  instance_type   = var.instance_type
+  subnet_id       = aws_subnet.ansible_subnet.id
   security_groups = [aws_security_group.ansible_sg.id]
-  key_name = "ansible-kp"
+  key_name        = "ansible-kp"
   root_block_device {
-    volume_size = 8
+    volume_size           = 8
     delete_on_termination = true
   }
 

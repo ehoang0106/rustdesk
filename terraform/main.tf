@@ -10,8 +10,8 @@ resource "aws_vpc" "remote_vpc" {
 
 #second cidr block for second subnet
 resource "aws_vpc_ipv4_cidr_block_association" "second_cidr_block" {
-  vpc_id        = aws_vpc.remote_vpc.id
-  cidr_block    = "10.1.0.0/16"
+  vpc_id     = aws_vpc.remote_vpc.id
+  cidr_block = "10.1.0.0/16"
 }
 
 #create a subnet
@@ -155,7 +155,7 @@ resource "aws_instance" "rustdesk_instance" {
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.rustdesk-subnet.id
   vpc_security_group_ids = [aws_security_group.rustdesk_security_group.id]
-  key_name = "rustdesk-kp"
+  key_name               = "rustdesk-kp"
   root_block_device {
     volume_size           = 8
     delete_on_termination = true
