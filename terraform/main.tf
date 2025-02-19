@@ -90,7 +90,7 @@ resource "aws_security_group" "rustdesk_security_group" {
 }
 
 #create a network acl
-resource "aws_network_acl" "rustdesk_network_acl" {
+resource "aws_network_acl" "remote_nacl" {
   vpc_id = aws_vpc.remote_vpc.id
 
   #inbound rules
@@ -115,7 +115,7 @@ resource "aws_network_acl" "rustdesk_network_acl" {
   }
 
   tags = {
-    Name = "rustdesk-network-acl"
+    Name = "remote_nacl"
   }
 }
 
