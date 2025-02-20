@@ -3,7 +3,8 @@
 
 
 
-### ansible server
+### SSH to ansible server
+Run: 
 ```
 sudo apt-get update
 sudo install apt ansible -y
@@ -14,9 +15,10 @@ nano inventory
 
 add these code to inventory
 
+note: replace ip `10.0.1.69` by your host ip address. in this case, i use my static ip
 ```
 [servers]
-rustdesk ansible_host=[YOUR RUSTDESK SERVER IP ADDRESS]
+rustdesk ansible_host=10.0.1.69
 [all:vars]
 ansible_python_interpreter=/usr/bin/python3
 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
@@ -26,9 +28,11 @@ download or create a keypair in `~/.ssh/your-keypair.pem`
 
 change the mode for keypair
 
-`chmod 400 ~/.ssh/your-keypair.pem`
+```
+chmod 400 ~/.ssh/your-keypair.pem
+```
 
-then swith ssh-agent to bash and add the keypair to ssh-agent
+then swith ssh-agent to `bash` and add the keypair to ssh-agent
 
 ```
 ssh-agent bash
@@ -42,7 +46,11 @@ make sure cd into the `~/ansible`
 ansible all -i inventory -m ping
 ```
 
-run ansible play book
+ensure 2 files `playbook.yml` and `docker-compose.yml` in the `/ansible` folder are copied to path: `~/ansible`
 
-```ansible-playbook -i inventory playbook.yml ```
+then run ansible play book
+
+```
+ansible-playbook -i inventory playbook.yml 
+```
 
