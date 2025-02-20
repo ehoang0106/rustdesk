@@ -2,7 +2,7 @@
 
 sudo apt-get update
 sudo apt install ansible -y
-cd ~
+cd /home/ubuntu
 mkdir ansible && cd ansible
 cat > inventory <<EOF
 [servers]
@@ -12,7 +12,7 @@ ansible_python_interpreter=/usr/bin/python3
 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 EOF
 
-cd /ansible
+cd /home/ubuntu/ansible
 cat > playbook.yml <<EOF
 ---
 - hosts: rustdesk
