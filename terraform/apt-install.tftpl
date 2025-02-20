@@ -1,0 +1,148 @@
+#!/bin/bash
+
+sudo apt-get update
+sudo apt install ansible -y
+cd ~
+mkdir ansible && cd ansible
+cat > inventory <<EOF
+[servers]
+rustdesk ansible_host=10.0.1.69
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+EOF
+
+cd /ansible
+cat > playbook.yml <<EOF
+---
+- hosts: rustdesk
+  become: true
+  tasks:
+    - name: Install required system packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+        state: latest
+        update_cache: true
+
+    - name: Add Docker GPG apt key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose
+        state: latest
+        update_cache: true
+
+    - name: Verify Docker installation
+      command: docker --version
+      register: docker_version
+      changed_when: false
+
+    - name: Verify Docker Compose installation
+      command: docker-compose --version
+      register: docker_compose_version
+      changed_when: false
+
+    - name: Verify ufw installation
+      command: ufw --version
+      register: ufw_version
+      changed_when: false
+
+    - name: Start and enable Docker
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Wait for Docker to be ready
+      command: sleep 10
+      changed_when: false
+
+    - name: Check docker ps
+      command: docker ps
+      register: docker_ps
+      changed_when: false
+
+    - name: Copy docker container to remote host
+      copy:
+        src: ~/ansible/docker-compose.yml
+        dest: /home/ubuntu/docker-compose.yml
+        owner: ubuntu
+        mode: '0644'
+
+    - name: Start docker container
+      command: sudo docker-compose up -d
+      args:
+        chdir: /home/ubuntu
+      register: docker_compose_up
+      changed_when: false    
+
+    #use ufw to allow traffic on port 21115-21119 tcp and 21116 udp
+    - name: Open ports 21115-21119 tcp
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+        state: enabled
+      loop:
+        - 21115
+        - 21116
+        - 21117
+        - 21118
+        - 21119
+
+    - name: Open port 21116 udp
+      ufw:
+        rule: allow
+        port: 21116
+        proto: udp
+        state: enabled
+    #use ufw to allow ssh
+    - name: Open port 22
+      ufw:
+        rule: allow
+        port: 22
+        proto: tcp
+        state: enabled
+EOF
+
+cat > docker-compose.yml <<EOF
+services:
+  hbbs:
+    container_name: hbbs
+    image: rustdesk/rustdesk-server:latest
+    command: hbbs
+    volumes:
+      - ./data:/root
+    network_mode: "host"
+    depends_on:
+      - hbbr
+    restart: always
+
+  hbbr:
+    container_name: hbbr
+    image: rustdesk/rustdesk-server:latest
+    command: hbbr
+    volumes:
+      - ./data:/root
+    network_mode: "host"
+    restart: always
+EOF

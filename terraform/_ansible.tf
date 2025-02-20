@@ -63,13 +63,13 @@ resource "aws_instance" "ansible_server" {
   instance_type   = var.instance_type
   subnet_id       = aws_subnet.ansible_subnet.id
   security_groups = [aws_security_group.ansible_sg.id]
-  key_name        = "ansible-kp"
+  key_name        = "ansible-keypair"
   root_block_device {
     volume_size           = 8
     delete_on_termination = true
   }
   
-  #user_data = base64encode(data.template_file.user_data.rendered)
+  user_data = base64encode(data.template_file.user_data.rendered)
   tags = {
     Name = "ansible_server"
   }
