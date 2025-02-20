@@ -63,7 +63,7 @@ resource "aws_instance" "ansible_server" {
   instance_type   = var.instance_type
   subnet_id       = aws_subnet.ansible_subnet.id
   security_groups = [aws_security_group.ansible_sg.id]
-  key_name        = "ansible-keypair"
+  key_name        = "ansible-kp"
   root_block_device {
     volume_size           = 8
     delete_on_termination = true
