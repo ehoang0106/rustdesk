@@ -40,6 +40,24 @@ resource "aws_route_table_association" "ansible_route_table_association" {
   route_table_id = aws_route_table.remote_route_table.id
 }
 
+#create a network interface to assign private ipv4 for instance
+resource "aws_network_interface" "ansible_network_interface" {
+  subnet_id   = aws_subnet.ansible_subnet.id
+  private_ips = ["10.1.1.69"]
+  security_groups = [aws_security_group.ansible_sg.id]
+
+  attachment {
+    instance = aws_instance.ansible_server.id
+    device_index = 1
+  }
+
+  tags = {
+    Name = "ansible_network_interface"
+  }
+}
+
+
+#create ec2 instance
 resource "aws_instance" "ansible_server" {
   ami             = var.ami_id #ubuntu
   instance_type   = var.instance_type

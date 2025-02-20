@@ -62,6 +62,18 @@ resource "aws_eip" "rustdesk_eip" {
   instance = aws_instance.rustdesk_instance.id
 }
 
+#create a network interface to assign private ipv4 for instance
+resource "aws_network_interface" "rustdesk_network_interface" {
+  subnet_id   = aws_subnet.rustdesk_subnet.id
+  private_ips = ["10.0.1.69"]
+  security_groups = [aws_security_group.rustdesk_security_group.id]
+
+  attachment {
+    instance = aws_instance.rustdesk_instance.id
+    device_index = 1
+  }
+}
+
 #create ec2 instance
 
 resource "aws_instance" "rustdesk_instance" {
