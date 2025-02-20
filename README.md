@@ -1,45 +1,31 @@
+# Create a Remote Desktop Server using Ansible, Terraform, and RustDesk
 
-# Create a Remote Desktop Server using Ansible, Terraform and RustDesk
+This project automates the creation of a remote desktop server using Ansible, Terraform, and RustDesk. 
 
+After the infrastructure is set up, the `ansible_server` installs Ansible, configures the inventory, and runs a playbook to install Docker and start Docker containers on the `rustdesk_server`.
 
+## Setup
 
-### SSH to ansible server
-Run: 
-```
-sudo apt-get update
-sudo install apt ansible -y
-cd ~
-mkdir ansible && cd ansible
-nano inventory
-```
+1. **Configure AWS Credentials**: Ensure your AWS credentials are configured using the AWS CLI or by exporting the environment variables.
 
-add these code to inventory
+2. **Initialize and Apply Terraform**: Navigate to the `terraform` directory, initialize Terraform, and apply the configuration to provision the infrastructure.
 
-note: replace ip `10.0.1.69` by your host ip address. in this case, i use my static ip
-```
-[servers]
-rustdesk ansible_host=10.0.1.69
-[all:vars]
-ansible_python_interpreter=/usr/bin/python3
-ansible_ssh_common_args='-o StrictHostKeyChecking=no'
-```
-
-download or create a keypair in `~/.ssh/your-keypair.pem`
-
-change the mode for keypair
+3. **Configure SSH Key Pair**: Copy the keypair to `~/.ssh/your-keypair.pem` in `ansible_server` then change the mode for keypair
 
 ```
 chmod 400 ~/.ssh/your-keypair.pem
 ```
 
-then swith ssh-agent to `bash` and add the keypair to ssh-agent
+then start and switch ssh-agent to `bash` and add the keypair to ssh-agent
 
 ```
+ssh-agent
 ssh-agent bash
 ssh-add ~/.ssh/your-keypair.pem
 ```
 
-#### test connection between ansible and the host server
+
+## Test connection between ansible and the host server
 
 make sure cd into the `~/ansible`
 ```
@@ -48,9 +34,8 @@ ansible all -i inventory -m ping
 
 ensure 2 files `playbook.yml` and `docker-compose.yml` in the `/ansible` folder are copied to path: `~/ansible`
 
-then run ansible play book
+then run ansible playbook
 
 ```
 ansible-playbook -i inventory playbook.yml 
 ```
-
