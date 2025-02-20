@@ -1,5 +1,4 @@
 .terraform/
 .terraform.lock.hcl
-ansible_install.tftpl
-data.tf
-rustdesk-key.pem
+*.pem
+.env
