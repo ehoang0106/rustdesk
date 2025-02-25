@@ -6,17 +6,17 @@ After the infrastructure is set up, the `ansible_server` installs Ansible, confi
 
 ## Setup
 
-1. **Configure AWS Credentials**: Ensure your AWS credentials are configured using the AWS CLI or by exporting the environment variables.
+1. **Configure AWS Credentials**: Ensure your AWS credentials are configured using the AWS CLI
 
 2. **Initialize and Apply Terraform**: Navigate to the `terraform` directory, initialize Terraform, and apply the configuration to provision the infrastructure.
 
-3. **Configure SSH Key Pair**: Copy the keypair to `~/.ssh/your-keypair.pem` in `ansible_server` then change the mode for keypair
+3. **Configure SSH Key Pair**: SSH to `ansible-server`. Copy the keypair to `~/.ssh/your-keypair.pem and make sure to change the mode for keypair to read-only.
 
 ```
 chmod 400 ~/.ssh/your-keypair.pem
 ```
 
-then start and switch ssh-agent to `bash` and add the keypair to ssh-agent
+Start and switch ssh-agent to `bash` and add the keypair to ssh-agent
 
 ```
 ssh-agent
