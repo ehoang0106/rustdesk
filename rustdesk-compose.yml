@@ -16,7 +16,7 @@ services:
   hbbs:
     image: rustdesk/rustdesk-server:latest
     container_name: hbbs
-    command: hbbs -r 129.146.81.82:21117
+    command: hbbs -r <YOUR-SERVER-IP-ADDRESS>:21117
     restart: always
     ports:
       - "21115:21115"
